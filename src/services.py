@@ -19,7 +19,7 @@ logger_utils.addHandler(handler_utils)
 
 
 # функция округления до нужного базового значения
-def round_to(number, base=10):
+def round_to(number: int | float, base: int = 10) -> int:
     logger_utils.debug(f"Округляю число {number} до базового значения {base}")
     if not isinstance(number, (int, float)) or isinstance(number, bool):
         logger_utils.error("Число должно быть int или float")
@@ -35,7 +35,7 @@ def round_to(number, base=10):
 
 
 # Инвесткопилка
-def investment_bank(month: str, transactions: list[dict[str, any]], limit: int) -> float:
+def investment_bank(month: str, transactions: list[dict], limit: int) -> float:
     """
     Функция возвращает сумму, которую удалось бы отложить в «Инвесткопилку».
     :param month:           месяц, для которого рассчитывается отложенная сумма (строка в формате 'YYYY-MM')

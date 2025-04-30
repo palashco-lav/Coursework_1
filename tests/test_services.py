@@ -8,7 +8,7 @@ from src.services import investment_bank, logger_utils, round_to
 
 # Фикстура для генерации тестовых транзакций
 @pytest.fixture
-def transactions():
+def transactions() -> list:
     return [
         {"Дата операции": "2025-04-01", "Сумма операции": 123.45},
         {"Дата операции": "2025-04-15", "Сумма операции": 567.89},
@@ -18,13 +18,13 @@ def transactions():
 
 # Тестирование функции round_to
 @pytest.mark.parametrize("number,base,expected", [(123.45, 10, 130), (567.89, 50, 600), (987.65, 100, 1000)])
-def test_round_to(number, base, expected):
+def test_round_to(number: int | float, base: int, expected: int) -> None:
     result = round_to(number, base)
     assert result == expected
 
 
 # Тестирование обработки ошибок в round_to
-def test_round_to_errors():
+def test_round_to_errors() -> None:
     with pytest.raises(TypeError):
         round_to("строка", 10)
 
@@ -39,13 +39,13 @@ def test_round_to_errors():
 @pytest.mark.parametrize(
     "month,limit,expected", [("2025-04", 10, 8.66), ("2025-04", 50, 58.66), ("2025-04", 100, 108.66)]
 )
-def test_investment_bank(transactions, month, limit, expected):
+def test_investment_bank(transactions: list, month: str, limit: int, expected: float) -> None:
     result = investment_bank(month, transactions, limit)
     assert result == expected
 
 
 # Тестирование обработки ошибок в investment_bank
-def test_investment_bank_errors():
+def test_investment_bank_errors() -> None:
     with pytest.raises(ValueError):
         investment_bank("неверный_формат", [], 10)
 
@@ -54,7 +54,7 @@ def test_investment_bank_errors():
 
 
 # Тестирование логгирования
-def test_logging():
+def test_logging() -> None:
     with patch.object(logger_utils, "debug") as mock_debug:
         round_to(123.45, 10)
         mock_debug.assert_called()

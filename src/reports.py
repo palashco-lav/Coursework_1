@@ -3,7 +3,7 @@ from typing import Optional
 import pandas as pd
 
 
-def spending_by_category(transactions: pd.DataFrame, category: str, date: Optional[str] = None) -> pd.DataFrame:
+def spending_by_category(transactions: pd.DataFrame, category: str, date: Optional[str] = None) -> int | float:
     # transactions_df, category_name: str, date=None):
     """
     Функция для получения трат по категории за последние 3 месяца

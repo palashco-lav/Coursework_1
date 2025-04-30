@@ -1,10 +1,10 @@
 import json
 import logging
 import os
-import numpy as np
 from datetime import datetime
 from pathlib import Path
 
+import numpy as np
 import pandas as pd
 import requests
 from dotenv import load_dotenv
@@ -42,8 +42,8 @@ def get_greeting() -> str:
 
 def get_last_card_total_cashback(
     read_data: pd.DataFrame,
-    start_date_ts: pd.DatetimeIndex | pd.Timestamp,
-    operation_date_ts: pd.DatetimeIndex | pd.Timestamp,
+    start_date_ts: pd.DatetimeIndex | pd.Timestamp | datetime,
+    operation_date_ts: pd.DatetimeIndex | pd.Timestamp | datetime,
 ) -> list:
     """
     Функция получения данных о последних 4-х цифрах номера карты, общая сумма расходов,
@@ -99,8 +99,8 @@ def get_last_card_total_cashback(
     else:
         result = []
         card_dict["last_digits"] = None
-        card_dict["total_spent"] = 0
-        card_dict["cashback"] = 0
+        card_dict["total_spent"]: int = 0
+        card_dict["cashback"]: int | float = 0
         logger_utils.debug(
             f"Отфильтрованные данные: "
             f'   Последние 4 цифры номера карты {card_dict["last_digits"]}'
@@ -143,15 +143,20 @@ def load_user_settings() -> dict:
 
 def read_financial_trans_xlsx(file_path: str) -> list:
     """
-    Функция для считывает финансовые операций из XLSX файла.
-    :param file_path: - путь к файлу
-    :return:
+    Функция для считывания финансовых операций из XLSX файла.
+
+    :param file_path: путь к файлу
+    :return: список словарей с данными финансовых операций
     """
-    with pd.ExcelFile(file_path) as xlsx_file:
-        logger_utils.debug(f'Открыт XLSX файл: "{file_path}"')
-        df = pd.read_excel(xlsx_file, sheet_name=0)
-        dict_list = df.to_dict(orient="records")
-        return dict_list
+    try:
+        with pd.ExcelFile(file_path) as xlsx_file:
+            logger_utils.debug(f'Открыт XLSX файл: "{file_path}"')
+            df = pd.read_excel(xlsx_file, sheet_name=0)
+            dict_list = df.to_dict(orient="records")
+            return dict_list
+    except FileNotFoundError as e:
+        logger_utils.error(f"Файл не найден: {e}")
+        raise e
 
 
 def get_top_transactions(df: pd.DataFrame) -> dict:
@@ -172,26 +177,21 @@ def get_top_transactions(df: pd.DataFrame) -> dict:
     if df.empty:
         raise ValueError("Датафрейм не должен быть пустым")
 
-    # Проверка типа входного параметра
-    if not isinstance(df, pd.DataFrame):
-        raise TypeError("Входной параметр должен быть типа pd.DataFrame")
-
     # Проверка наличия необходимых столбцов
     required_columns = {"Дата операции", "Сумма операции", "Категория", "Описание"}
     if not required_columns.issubset(df.columns):
         raise ValueError(f"Датафрейм должен содержать столбцы: {', '.join(required_columns)}")
-    test_data = df["Категория"].dtype
     # Проверка типов данных в столбцах
     if not pd.api.types.is_datetime64_dtype(df["Дата операции"].dtype):
         raise TypeError("Столбец 'Дата операции' должен содержать значения типа datetime")
     if not np.issubdtype(df["Сумма операции"].dtype, np.number):
         raise TypeError("Столбец 'Сумма операции' должен содержать числовые значения")
-    if not pd.api.types.is_string_dtype(df['Категория']):
+    if not pd.api.types.is_string_dtype(df["Категория"]):
         raise TypeError("Столбец 'Сумма Категория' должен строку")
     # Получаем топ-5 минимальных значений по сумме операции
 
     min_values = df.nsmallest(5, "Сумма операции")
-    top_transactions_dict = []
+    top_transactions_dict = {}
 
     # Перебираем строки и формируем словарь
     logger_utils.debug("Формируем словарь топ-5 транзакций:")
@@ -221,10 +221,12 @@ def get_top_transactions(df: pd.DataFrame) -> dict:
     return top_transactions_dict
 
 
-def get_currency_rates(currencies):
+def get_currency_rates(currencies: list) -> list:
     try:
         # Получаем JSON с сервера ЦБ
-        logger_utils.debug("Запрашиваю данные по курсам валют с сервера ЦБ: https://www.cbr-xml-daily.ru/daily_json.js")
+        logger_utils.debug(
+            "Запрашиваю данные по курсам валют с сервера ЦБ: https://www.cbr-xml-daily.ru/daily_json.js"
+        )
         response = requests.get("https://www.cbr-xml-daily.ru/daily_json.js")
         response.raise_for_status()  # Проверка на успешность запроса
         data = response.json()
