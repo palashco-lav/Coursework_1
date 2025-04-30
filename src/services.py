@@ -1,5 +1,6 @@
-from datetime import datetime
 import logging
+import math
+from datetime import datetime
 from pathlib import Path
 
 logger_utils = logging.getLogger(__name__)
@@ -16,6 +17,7 @@ handler_utils.setFormatter(formatter_utils)
 # добавление обработчика к логгеру
 logger_utils.addHandler(handler_utils)
 
+
 # функция округления до нужного базового значения
 def round_to(number, base=10):
     logger_utils.debug(f"Округляю число {number} до базового значения {base}")
@@ -27,11 +29,12 @@ def round_to(number, base=10):
         logger_utils.error("Base должно быть положительным целым числом")
         raise ValueError("Base должно быть положительным целым числом")
 
-    result = int(base * round(float(number) / base))
+    result = int(base * math.ceil(float(number) / base))
     logger_utils.debug(f"Округлённое число {result}")
     return result
 
- # Инвесткопилка
+
+# Инвесткопилка
 def investment_bank(month: str, transactions: list[dict[str, any]], limit: int) -> float:
     """
     Функция возвращает сумму, которую удалось бы отложить в «Инвесткопилку».
@@ -43,30 +46,28 @@ def investment_bank(month: str, transactions: list[dict[str, any]], limit: int) 
 
     # Проверяем корректность формата месяца
     try:
-        datetime.strptime(month, '%Y-%m')
+        thue_data = datetime.strptime(month, "%Y-%m")
     except ValueError:
         logger_utils.error("Некорректный формат месяца. Должно быть 'YYYY-MM'")
         raise ValueError("Некорректный формат месяца. Должно быть 'YYYY-MM'")
-    logger_utils.debug(f"Запуск функции определения потенциала инвесткопилки"
-                       f"Расчетный месяц {datetime.strftime('%m')}"
-                       f"Предел округления {limit}")
+    logger_utils.debug(
+        f"Запуск функции определения потенциала инвесткопилки"
+        f"Расчетный месяц {thue_data.strftime('%m')}"
+        f"Предел округления {limit}"
+    )
     # Инициализируем итоговую сумму
     summ: float = 0.0
 
     for transaction in transactions:
         # Проверяем корректность формата даты
         try:
-            transaction_date = datetime.strptime(transaction['Дата операции'], "%Y-%m-%d") # "%d.%m.%dYYYM:%Ss"
+            transaction_date = datetime.strptime(transaction["Дата операции"], "%Y-%m-%d")  # "%d.%m.%dYYYM:%Ss"
         except ValueError:
             logger_utils.error("Некорректный формат даты транзакции. Должно быть 'YYYY-MM-DD'")
             raise ValueError("Некорректный формат даты транзакции. Должно быть 'YYYY-MM-DD'")
 
         # Проверяем, попадает ли транзакция в нужный месяц
-        if transaction_date.strftime('%Y-%m') == month:
-            summ += round_to((transaction['Сумма операции']), limit) - transaction['Сумма операции']
+        if transaction_date.strftime("%Y-%m") == month:
+            summ += round_to((transaction["Сумма операции"]), limit) - transaction["Сумма операции"]
 
-    return round(summ, 2) # Округляем итоговую сумму до 2 знаков после запятой
-
-
-
-
+    return round(summ, 2)  # Округляем итоговую сумму до 2 знаков после запятой

@@ -1,10 +1,10 @@
-import json
-from datetime import datetime
-from dotenv import load_dotenv
 import logging
-import pandas as pd
-import src.utils as utils
+from datetime import datetime
 from pathlib import Path
+
+import pandas as pd
+
+import src.utils as utils
 
 base_dir = Path(__file__).resolve().parent.parent
 
@@ -12,16 +12,16 @@ logger_utils = logging.getLogger(__name__)
 logger_utils.setLevel(logging.DEBUG)
 
 # настройка обработчика и форматировщика для logger_masks
-handler_utils = logging.FileHandler(
-    f"{Path(__file__).resolve().parent.parent}\\utils.log", mode="w", encoding="utf-8"
-)
+handler_utils = logging.FileHandler(f"{Path(__file__).resolve().parent.parent}\\utils.log", mode="w", encoding="utf-8")
 formatter_utils = logging.Formatter("%(asctime)s %(filename)s %(levelname)s: %(message)s")
 
 # добавление форматировщика к обработчику
 handler_utils.setFormatter(formatter_utils)
 # добавление обработчика к логгеру
 logger_utils.addHandler(handler_utils)
-def function_for_home_page(data_in : str) -> list:
+
+
+def function_for_home_page(data_in: str) -> dict:
     """
     :param data_in:
     :return:
@@ -35,7 +35,7 @@ def function_for_home_page(data_in : str) -> list:
     operation_date_ts = pd.to_datetime(operation_date)
 
     # Формирую приветственное сообщение
-    data_out = {}
+    data_out: dict = {}
     data_out["greeting"] = []
     data_out["greeting"].append(utils.get_greeting())
 
@@ -49,13 +49,8 @@ def function_for_home_page(data_in : str) -> list:
     data_out["top_transactions"].append(result_dict)
 
     user_settings = utils.load_user_settings()
-
-    # Получаем настройки из файла user_settings.json
-    file_path = f"{base_dir}//user_settings.json"
-    with open(file_path, 'r') as file:
-        settings = json.load(file)
-        currencies = settings['user_currencies']
-        user_stocks = settings['user_stocks']
+    currencies = user_settings["user_currencies"]
+    user_stocks = user_settings["user_stocks"]
 
     data_out["currency_rates"] = []
     data_out["currency_rates"].append(utils.get_currency_rates(currencies))
@@ -64,5 +59,3 @@ def function_for_home_page(data_in : str) -> list:
     data_out["stock_prices"].append(utils.get_stock_prices(user_stocks))
 
     return data_out
-
-
