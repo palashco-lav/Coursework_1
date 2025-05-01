@@ -14,5 +14,3 @@ with pd.ExcelFile(file_path) as xlsx_file:
 
 
 views.function_for_home_page("2018-12-12 00:00:00")  # "%Y-%m-%d %H:%M:%S")
-
-spending_by_category(df, "Каршеринг", "31.12.2021 16:44:00")

@@ -7,8 +7,15 @@ from unittest.mock import MagicMock, Mock, mock_open, patch
 import pandas as pd
 import pytest
 
-from src.utils import (get_currency_rates, get_greeting, get_last_card_total_cashback, get_stock_prices,
-                       get_top_transactions, load_user_settings, read_financial_trans_xlsx)
+from src.utils import (
+    get_currency_rates,
+    get_greeting,
+    get_last_card_total_cashback,
+    get_stock_prices,
+    get_top_transactions,
+    load_user_settings,
+    read_financial_trans_xlsx,
+)
 
 
 # Фикстура для создания тестовых временных меток
@@ -140,8 +147,6 @@ def test_multiple_cards(test_dataframe: pd.DataFrame) -> None:
 
 
 # Тест на проверку обработки пустых данных
-
-
 def test_empty_data() -> None:
     empty_df = pd.DataFrame(columns=["Дата операции", "Категория", "Сумма операции", "Номер карты"])
 
