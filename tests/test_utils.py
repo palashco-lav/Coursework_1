@@ -283,6 +283,7 @@ def test_get_top_transactions_incorrect_data(incorrect_data: dict) -> None:
     with pytest.raises(Exception):
         get_top_transactions(df)
 
+
 # Тест на проверку форматирования даты
 def test_date_formatting(test_dataframe_top_transactions: pd.DataFrame) -> None:
     result = get_top_transactions(test_dataframe_top_transactions)

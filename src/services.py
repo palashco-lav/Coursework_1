@@ -94,7 +94,9 @@ def investment_bank(month: str, transactions: list[dict], limit: int) -> float:
     for transaction in transactions:
         # Проверяем корректность формата даты
         try:
-            transaction_date = datetime.strptime(transaction["Дата операции"], "%d.%m.%Y %H:%M:%S")  # "%d.%m.%dYYYM:%Ss"
+            transaction_date = datetime.strptime(
+                transaction["Дата операции"], "%d.%m.%Y %H:%M:%S"
+            )  # "%d.%m.%dYYYM:%Ss"
         except ValueError:
             logger_utils.error("Некорректный формат даты транзакции. Должно быть 'DD.MM.YYYY HH.MM.SS'")
             raise ValueError("Некорректный формат даты транзакции. Должно быть 'DD.MM.YYYY HH.MM.SS'")

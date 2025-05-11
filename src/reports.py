@@ -1,15 +1,14 @@
 from typing import Optional
 
-import src.decorators
 import pandas as pd
 
 from src.decorators import export_to_file
 
 
 @export_to_file
-def spending_by_category(transactions: pd.DataFrame,
-                         category: str,
-                         date: Optional[str] = None) -> int | float | pd.DataFrame:
+def spending_by_category(
+    transactions: pd.DataFrame, category: str, date: Optional[str] = None
+) -> int | float | pd.DataFrame:
     """
     Функция для получения суммы трат по определённой категории за последние 3 месяца.
 
