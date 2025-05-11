@@ -15,7 +15,7 @@ logger_utils = logging.getLogger(__name__)
 logger_utils.setLevel(logging.DEBUG)
 
 # настройка обработчика и форматировщика для logger_masks
-handler_utils = logging.FileHandler(f"{Path(__file__).resolve().parent.parent}\\utils.log", mode="w", encoding="utf-8")
+handler_utils = logging.FileHandler(f"{Path(__file__).resolve().parent.parent}/utils.log", mode="w", encoding="utf-8")
 formatter_utils = logging.Formatter("%(asctime)s %(filename)s %(levelname)s: %(message)s")
 
 # добавление форматировщика к обработчику
@@ -105,8 +105,8 @@ def get_last_card_total_cashback(
     # Оставляем данные только после начала отчётного периода
     read_data = read_data[(read_data["Дата операции"] >= start_date_ts)]
     # Также удаляем данные после входящей даты
-    end_operation_date_ts = operation_date_ts + pd.Timedelta(days=1) - pd.Timedelta(microseconds=1)
-    read_data = read_data[(read_data["Дата операции"] <= end_operation_date_ts)]
+    # end_operation_date_ts = operation_date_ts + pd.Timedelta(days=1) - pd.Timedelta(microseconds=1)
+    read_data = read_data[(read_data["Дата операции"] <= operation_date_ts)]
 
     # формирую передачу данных о: последние 4 цифры карты; общая сумма расходов; кешбэк (1 рубль на каждые 100 рублей).
     user_card = read_data["Номер карты"].unique().tolist()
@@ -156,7 +156,7 @@ def load_user_settings() -> dict:
     >>> load_user_settings()
     {'username': 'example_user', 'theme': 'dark'}
     """
-    file_path = f"{base_dir}//user_settings.json"
+    file_path = f"{base_dir}/user_settings.json"
     try:
         logger_utils.debug(f'Попытка открыть файл: "{file_path}"')
         # открываем файл
@@ -276,6 +276,8 @@ def get_top_transactions(df: pd.DataFrame) -> dict:
 
     # Перебираем строки и формируем словарь
     logger_utils.debug("Формируем словарь топ-5 транзакций:")
+    # Создаем список для хранения результатов
+    data_out = []
     for index, row in min_values.iterrows():
 
         # Формируем словарь с нужными полями
@@ -297,9 +299,9 @@ def get_top_transactions(df: pd.DataFrame) -> dict:
         )
 
         # Добавляем в выходной список
-        # data_out.append(top_transactions_dict)
+        data_out.append(top_transactions_dict)
 
-    return top_transactions_dict
+    return data_out
 
 
 def get_currency_rates(currencies: list) -> list:
@@ -384,7 +386,8 @@ def get_stock_prices(user_stocks: list) -> list:
     load_dotenv()
 
     # URL для запроса
-    base_url = os.getenv("BASE_URL")
+    # адрес обращения
+    base_url = "https://www.alphavantage.co/query"
     api_key = os.getenv("API_KEY")
 
     # Результат будем сохранять здесь

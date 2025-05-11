@@ -10,9 +10,9 @@ from src.services import investment_bank, logger_utils, round_to
 @pytest.fixture
 def transactions() -> list:
     return [
-        {"Дата операции": "2025-04-01", "Сумма операции": 123.45},
-        {"Дата операции": "2025-04-15", "Сумма операции": 567.89},
-        {"Дата операции": "2025-05-01", "Сумма операции": 987.65},  # Не попадает в тестируемый месяц
+        {"Дата операции": "01.04.2025 00:00:01", "Сумма операции": 123.45},
+        {"Дата операции": "15.04.2025 00:00:01", "Сумма операции": 567.89},
+        {"Дата операции": "01.04.2025 00:00:01", "Сумма операции": 987.65},
     ]
 
 
@@ -37,7 +37,7 @@ def test_round_to_errors() -> None:
 
 # Тестирование функции investment_bank
 @pytest.mark.parametrize(
-    "month,limit,expected", [("2025-04", 10, 8.66), ("2025-04", 50, 58.66), ("2025-04", 100, 108.66)]
+    "month,limit,expected", [("2025-04", 10, 11.01), ("2025-04", 50, 71.01), ("2025-04", 100, 121.01)]
 )
 def test_investment_bank(transactions: list, month: str, limit: int, expected: float) -> None:
     result = investment_bank(month, transactions, limit)

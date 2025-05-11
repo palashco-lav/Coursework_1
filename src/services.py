@@ -8,7 +8,7 @@ logger_utils.setLevel(logging.DEBUG)
 
 # настройка обработчика и форматировщика для logger_masks
 handler_utils = logging.FileHandler(
-    f"{Path(__file__).resolve().parent.parent}\\services.log", mode="w", encoding="utf-8"
+    f"{Path(__file__).resolve().parent.parent}/services.log", mode="w", encoding="utf-8"
 )
 formatter_utils = logging.Formatter("%(asctime)s %(filename)s %(levelname)s: %(message)s")
 
@@ -94,10 +94,10 @@ def investment_bank(month: str, transactions: list[dict], limit: int) -> float:
     for transaction in transactions:
         # Проверяем корректность формата даты
         try:
-            transaction_date = datetime.strptime(transaction["Дата операции"], "%Y-%m-%d")  # "%d.%m.%dYYYM:%Ss"
+            transaction_date = datetime.strptime(transaction["Дата операции"], "%d.%m.%Y %H:%M:%S")  # "%d.%m.%dYYYM:%Ss"
         except ValueError:
-            logger_utils.error("Некорректный формат даты транзакции. Должно быть 'YYYY-MM-DD'")
-            raise ValueError("Некорректный формат даты транзакции. Должно быть 'YYYY-MM-DD'")
+            logger_utils.error("Некорректный формат даты транзакции. Должно быть 'DD.MM.YYYY HH.MM.SS'")
+            raise ValueError("Некорректный формат даты транзакции. Должно быть 'DD.MM.YYYY HH.MM.SS'")
 
         # Проверяем, попадает ли транзакция в нужный месяц
         if transaction_date.strftime("%Y-%m") == month:

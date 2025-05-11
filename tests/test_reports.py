@@ -12,7 +12,7 @@ def transactions_df() -> pd.DataFrame:
     data = {
         "Дата операции": ["01.01.2025 00:00:00", "01.02.2025 00:00:00", "01.03.2025 00:00:00", "01.04.2025 00:00:00"],
         "Категория": ["Еда", "Еда", "Развлечения", "Еда"],
-        "Сумма операции": [100, 200, 150, 300],
+        "Сумма операции": [-100, -200, -150, -300],
     }
     return pd.DataFrame(data)
 
@@ -21,8 +21,8 @@ def transactions_df() -> pd.DataFrame:
 @pytest.mark.parametrize(
     "category, expected_sum",
     [
-        ("Еда", 600),  # Все транзакции за 3 месяца
-        ("Развлечения", 150),  # Одна транзакция
+        ("Еда", -600),  # Все транзакции за 3 месяца
+        ("Развлечения", -150),  # Одна транзакция
         ("Транспорт", 0),  # Нет транзакций
     ],
 )
@@ -30,6 +30,10 @@ def test_spending_by_category(transactions_df: pd.DataFrame, category: str, expe
     with patch("pandas._libs.tslibs.timestamps.Timestamp.now") as mock_datetime:
         mock_datetime.return_value = pd.Timestamp("2025-04-01")
         result = spending_by_category(transactions_df, category)
+        if result.any().all():
+            result = result["Сумма операции"].sum()
+        else:
+            result = 0
         assert result == expected_sum
 
 
@@ -57,17 +61,17 @@ def test_invalid_date_format(transactions_df: pd.DataFrame) -> None:
 def test_with_specified_date(transactions_df: pd.DataFrame) -> None:
     date_str = "01.04.2025 00:00:00"
     result = spending_by_category(transactions_df, "Еда", date_str)
-    assert result == 300  # Только последняя транзакция попадает в период
+    assert result["Сумма операции"].sum() == -300  # Только последняя транзакция попадает в период
 
 
 # Тест на проверку корректной работы с разными временными периодами
 @pytest.mark.parametrize(
     "date_str, expected_sum",
     [
-        ("01.03.2025 00:00:00", 300),  # Период с декабря по февраль
-        ("01.02.2025 00:00:00", 500),  # Период с ноября по январь
+        ("01.03.2025 00:00:00", -300),  # Период с декабря по февраль
+        ("01.02.2025 00:00:00", -500),  # Период с ноября по январь
     ],
 )
 def test_different_periods(transactions_df: pd.DataFrame, date_str: str, expected_sum: pd.DataFrame) -> None:
     result = spending_by_category(transactions_df, "Еда", date_str)
-    assert result == expected_sum
+    assert result["Сумма операции"].sum() == expected_sum

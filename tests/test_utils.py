@@ -91,7 +91,7 @@ def test_dataframe() -> pd.DataFrame:
     "start_date, end_date, expected_total_spent, expected_cashback, card_digit",
     [
         (datetime(2025, 4, 1), datetime(2025, 4, 4), 4500, 45.0, "1111"),  # Все операции попадают в период
-        (datetime(2025, 4, 2), datetime(2025, 4, 3), 3500, 35.0, "1111"),  # Только две операции попадают
+        (datetime(2025, 4, 2), datetime(2025, 4, 3), 2000, 20.0, "1111"),  # Только две операции попадают
         (datetime(2025, 4, 4), datetime(2025, 4, 4), 0, 0.0, None),  # Нет операций в периоде
     ],
 )
@@ -283,18 +283,26 @@ def test_get_top_transactions_incorrect_data(incorrect_data: dict) -> None:
     with pytest.raises(Exception):
         get_top_transactions(df)
 
-
 # Тест на проверку форматирования даты
 def test_date_formatting(test_dataframe_top_transactions: pd.DataFrame) -> None:
     result = get_top_transactions(test_dataframe_top_transactions)
-    assert result["date"] == "2025.04.01"
-    assert len(result["date"].split(".")) == 3
+
+    assert result[0]["date"] == "2025.04.05"
+    assert result[1]["date"] == "2025.04.04"
+    assert result[2]["date"] == "2025.04.03"
+    assert result[3]["date"] == "2025.04.02"
+    assert result[4]["date"] == "2025.04.01"
+    assert len(result[4]["date"].split(".")) == 3
 
 
 # Тест на проверку преобразования суммы
 def test_amount_conversion(test_dataframe_top_transactions: pd.DataFrame) -> None:
     result = get_top_transactions(test_dataframe_top_transactions)
-    assert result["amount"] == 100  # Проверка на обратное преобразование отрицательного числа
+    assert result[0]["amount"] == 500
+    assert result[1]["amount"] == 400
+    assert result[2]["amount"] == 300
+    assert result[3]["amount"] == 200
+    assert result[4]["amount"] == 100  # Проверка на обратное преобразование отрицательного числа
 
 
 # Фикстура для создания тестовых данных

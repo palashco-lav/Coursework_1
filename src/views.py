@@ -12,7 +12,7 @@ logger_utils = logging.getLogger(__name__)
 logger_utils.setLevel(logging.DEBUG)
 
 # настройка обработчика и форматировщика для logger_masks
-handler_utils = logging.FileHandler(f"{Path(__file__).resolve().parent.parent}\\utils.log", mode="w", encoding="utf-8")
+handler_utils = logging.FileHandler(f"{Path(__file__).resolve().parent.parent}/utils.log", mode="w", encoding="utf-8")
 formatter_utils = logging.Formatter("%(asctime)s %(filename)s %(levelname)s: %(message)s")
 
 # добавление форматировщика к обработчику
@@ -71,10 +71,16 @@ def function_for_home_page(data_in: str) -> dict:
     data_out["greeting"] = []
     data_out["greeting"].append(utils.get_greeting())
 
-    read_data = pd.read_excel(f"{base_dir}\\data\\operations.xlsx")
+    read_data = pd.read_excel(f"{base_dir}/data/operations.xlsx")
 
     data_out["card"] = []
     data_out["card"].append(utils.get_last_card_total_cashback(read_data, start_date_ts, operation_date_ts))
+
+    # Оставляем данные только после начала отчётного периода
+    read_data = read_data[(read_data["Дата операции"] >= start_date_ts)]
+    # Также удаляем данные после входящей даты
+    # end_operation_date_ts = operation_date_ts + pd.Timedelta(days=1) - pd.Timedelta(microseconds=1)
+    read_data = read_data[(read_data["Дата операции"] <= operation_date_ts)]
 
     result_dict = utils.get_top_transactions(read_data)
     data_out["top_transactions"] = []

@@ -1,9 +1,15 @@
 from typing import Optional
 
+import src.decorators
 import pandas as pd
 
+from src.decorators import export_to_file
 
-def spending_by_category(transactions: pd.DataFrame, category: str, date: Optional[str] = None) -> int | float:
+
+@export_to_file
+def spending_by_category(transactions: pd.DataFrame,
+                         category: str,
+                         date: Optional[str] = None) -> int | float | pd.DataFrame:
     """
     Функция для получения суммы трат по определённой категории за последние 3 месяца.
 
@@ -53,6 +59,6 @@ def spending_by_category(transactions: pd.DataFrame, category: str, date: Option
     transactions = transactions[(transactions["Дата операции"] >= start_date)]
     transactions = transactions[(transactions["Дата операции"] <= date_dt)]
     filtered_df = transactions[(transactions["Категория"] == category)]
-
+    filtered_df = filtered_df[(filtered_df["Сумма операции"] < 0)]
     # Возвращаем сумму трат по отфильтрованным транзакциям
-    return filtered_df["Сумма операции"].sum()
+    return filtered_df
