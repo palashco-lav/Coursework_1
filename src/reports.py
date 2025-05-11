@@ -1,57 +1,63 @@
-import pandas as pd
-import json
-from datetime import datetime, timedelta
 from typing import Optional
 
+import pandas as pd
 
-def spending_by_category(transactions: pd.DataFrame,
-                         category: str,
-                         date: Optional[str] = None) -> pd.DataFrame:
-        # transactions_df, category_name: str, date=None):
+from src.decorators import export_to_file
+
+
+@export_to_file
+def spending_by_category(
+    transactions: pd.DataFrame, category: str, date: Optional[str] = None
+) -> int | float | pd.DataFrame:
     """
-    Функция для получения трат по категории за последние 3 месяца
+    Функция для получения суммы трат по определённой категории за последние 3 месяца.
 
     Параметры:
-    transactions_df (pd.DataFrame) - датафрейм с транзакциями
-    category_name (str) - название категории
-    date (datetime, optional) - дата для расчета периода (по умолчанию текущая дата)
+    transactions (pd.DataFrame): датафрейм с транзакциями, содержащий столбцы «Дата операции»,
+    «Категория» и «Сумма операции».
+    category (str): название категории, по которой нужно подсчитать траты.
+    date (str, optional): дата для расчёта периода в формате «dd.mm.yyyy HH:MM:SS».
+    Если не указана, используется текущая дата.
 
     Возвращает:
-    float - сумма трат по категории за последние 3 месяца
+    int | float: сумма трат по указанной категории за последние 3 месяца.
+
+    Описание:
+    Функция определяет границы периода (последние 3 месяца от указанной даты или текущей даты),
+    фильтрует транзакции по категории и периоду, затем возвращает сумму трат по отфильтрованным транзакциям.
     """
 
     # Если дата не передана, используем текущую дату
-    date_dt = datetime.now()
-    if date is not None:
-        date_dt = datetime.strptime(date, '%dd.%MM.%YYYY %HH:%MM:%SS')
+    if date is None:
+        # date_dt = pd.Timestamp.now()
+        # date_dt = date_dt.normalize()
+        date_dt = pd.Timestamp.now().normalize()
+        # Определяем границы периода (3 месяца назад от указанной даты)
+        start_date = date_dt - pd.DateOffset(months=3)
+        # date_dt = pd.to_datetime(date, '%dd.%MM.%YYYY %HH:%MM:%SS')
+    else:
+        # Определяем границы периода (3 месяца вперёд от указанной даты)
+        start_date = pd.to_datetime(date, format="%d.%m.%Y %H:%M:%S")
+        date_dt = start_date + pd.DateOffset(months=3)
 
     # Проверяем, что датафрейм не пустой
     if transactions.empty:
-        return 0.0
-
-    transactions_data = transactions.to_dict(orient='records')
+        # data_out = dict(category=category, amound=0)
+        # result = json.dumps(data_out, ensure_ascii=False)
+        return 0  # pd.DataFrame(result)
 
     # Проверяем наличие необходимых столбцов
-    required_columns = ['Дата операции', 'Категория', 'Сумма операции']
+    required_columns = ["Дата операции", "Категория", "Сумма операции"]
     if not set(required_columns).issubset(transactions.columns):
         raise ValueError("Датафрейм должен содержать столбцы: Дата операции, Категория, Сумма операции")
 
-    sum = 0
+    # Преобразуем столбец date в формат datetime, если это еще не сделано
+    transactions["Дата операции"] = pd.to_datetime(transactions["Дата операции"], format="%d.%m.%Y %H:%M:%S")
 
-    for transaction in transactions_data:
-        # Преобразуем столбец date в формат datetime, если это еще не сделано
-        # transactions_data['Дата операции'] = pd.to_datetime(transactions_data['Дата операции'])
-        transactions_time = datetime.strptime(transaction['Дата операции'], '%d.%M.%Y %H:%M:%S')
-
-        # Определяем границы периода (3 месяца назад от указанной даты)
-        start_date = date_dt - timedelta(days=90)
-
-        # Фильтруем транзакции п    о категории и периоду
-        filtered_df = transactions_data[(transactions_data['Дата операции'] >= start_date) &
-                                      (transactions_data['Дата операции'] <= date_dt) &
-                                      (transactions_data['Категория'] == category)]
-
-        # Возвращаем сумму трат по отфильтрованным транзакциям
-        sum += filtered_df['amount'].sum()
-
-    return sum
+    # Фильтруем транзакции по категории и периоду
+    transactions = transactions[(transactions["Дата операции"] >= start_date)]
+    transactions = transactions[(transactions["Дата операции"] <= date_dt)]
+    filtered_df = transactions[(transactions["Категория"] == category)]
+    filtered_df = filtered_df[(filtered_df["Сумма операции"] < 0)]
+    # Возвращаем сумму трат по отфильтрованным транзакциям
+    return filtered_df
